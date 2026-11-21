@@ -4,6 +4,7 @@ from pathlib import Path
 from langchain_core.documents import Document
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
+from dotenv import load_dotenv
 
 
 def build_vector_store(
@@ -30,6 +31,7 @@ def build_vector_store(
         raise ValueError("Chunks must not contain empty text")
 
     if embedding_model is None:
+        load_dotenv()
         embedding_model = OpenAIEmbeddings(
             model="text-embedding-3-small"
         )
@@ -56,7 +58,7 @@ def save_vector_store(
 
 
 def load_vector_store(
-    directory: str,
+    directory: str,    
     embedding_model=None,
 ) -> FAISS:
     """
@@ -82,6 +84,7 @@ def load_vector_store(
         )
 
     if embedding_model is None:
+        load_dotenv()
         embedding_model = OpenAIEmbeddings(
             model="text-embedding-3-small"
         )
