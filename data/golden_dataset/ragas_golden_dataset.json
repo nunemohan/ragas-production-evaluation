@@ -1,0 +1,226 @@
+{
+  "dataset_name": "Nunez SecureCare Plus - RAGAS Golden Evaluation Dataset",
+  "dataset_version": "1.0.0",
+  "domain": "Synthetic health insurance policy knowledge base",
+  "notice": "Fictional training data. Nunez Secure Insurance and SecureCare Plus are not real insurance products. All facts and policy terms are synthetic and must not be used for real insurance decisions.",
+  "count": 15,
+  "categories": {
+    "simple_factual": 3,
+    "numerical": 2,
+    "multi_condition": 2,
+    "conceptual": 2,
+    "multi_document": 2,
+    "ambiguous": 2,
+    "unanswerable": 2
+  },
+  "records": [
+    {
+      "id": "Q01",
+      "category": "simple_factual",
+      "user_input": "What is the sum insured under the sample SecureCare Plus plan?",
+      "reference": "The sample SecureCare Plus plan has a sum insured of ₹5,00,000 per policy year, subject to applicable sub-limits and policy conditions.",
+      "reference_contexts": [
+        "The standard sample plan used in this evaluation dataset has a sum insured of ₹5,00,000 per policy year. The sum insured is the maximum overall amount available for eligible claims in a policy year, subject to applicable sub-limits and policy conditions."
+      ],
+      "source_document_ids": [
+        "01_policy_overview.md",
+        "02_benefits_and_limits.md"
+      ],
+      "expected_behavior": "Answer directly and include the per-policy-year qualifier."
+    },
+    {
+      "id": "Q02",
+      "category": "simple_factual",
+      "user_input": "How long is the waiting period for a pre-existing disease?",
+      "reference": "The waiting period for a pre-existing disease is 36 months of continuous coverage from the first policy commencement date, subject to applicable portability and continuity credits recorded by the insurer.",
+      "reference_contexts": [
+        "A 36-month continuous coverage waiting period applies to pre-existing diseases, counted from the first policy commencement date, subject to applicable portability and continuity credits recorded by the insurer."
+      ],
+      "source_document_ids": [
+        "03_waiting_periods_and_exclusions.md"
+      ],
+      "expected_behavior": "State 36 months and preserve the continuous-coverage and portability qualification."
+    },
+    {
+      "id": "Q03",
+      "category": "simple_factual",
+      "user_input": "By when must an emergency hospitalization be notified to the insurer?",
+      "reference": "The policyholder or a representative must notify the insurer within 48 hours of admission for an emergency hospitalization.",
+      "reference_contexts": [
+        "For an emergency hospitalization, the policyholder or a representative must notify the insurer within 48 hours of admission."
+      ],
+      "source_document_ids": [
+        "04_claims_procedure.md"
+      ],
+      "expected_behavior": "Answer with the 48-hour deadline."
+    },
+    {
+      "id": "Q04",
+      "category": "numerical",
+      "user_input": "For the ₹5,00,000 plan, what is the maximum standard room rent per day?",
+      "reference": "The standard room rent limit is 1% of the ₹5,00,000 base sum insured, which equals ₹5,000 per day.",
+      "reference_contexts": [
+        "The standard sample plan used in this evaluation dataset has a sum insured of ₹5,00,000 per policy year. The sum insured is the maximum overall amount available for eligible claims in a policy year, subject to applicable sub-limits and policy conditions.",
+        "Eligible standard room rent is limited to 1% of the base sum insured per day. For the sample ₹5,00,000 plan, the room rent limit is ₹5,000 per day."
+      ],
+      "source_document_ids": [
+        "02_benefits_and_limits.md"
+      ],
+      "expected_behavior": "Calculate and state ₹5,000 per day; do not confuse it with the ICU limit."
+    },
+    {
+      "id": "Q05",
+      "category": "numerical",
+      "user_input": "How many days of pre-hospitalization and post-hospitalization expenses are covered?",
+      "reference": "Eligible related medical expenses are covered for 30 days before admission and 60 days after discharge, subject to policy terms and documentation.",
+      "reference_contexts": [
+        "Eligible medical expenses related to a covered hospitalization are covered for 30 days before the date of admission and 60 days after the date of discharge."
+      ],
+      "source_document_ids": [
+        "02_benefits_and_limits.md"
+      ],
+      "expected_behavior": "State both periods in the correct order: 30 days before and 60 days after."
+    },
+    {
+      "id": "Q06",
+      "category": "multi_condition",
+      "user_input": "What conditions must be met for an inpatient hospitalization claim to be eligible?",
+      "reference": "The admission must be medically necessary, the insured person must be admitted for at least 24 consecutive hours, the treatment must not be excluded, and applicable waiting periods must have been completed. Eligible listed day-care procedures are an exception to the 24-hour minimum.",
+      "reference_contexts": [
+        "Eligible inpatient hospitalization expenses are covered when the admission is medically necessary; the insured person is admitted for at least 24 consecutive hours; and the treatment is not excluded and applicable waiting periods have been completed. The 24-hour minimum does not apply to eligible day-care procedures listed in the policy schedule.",
+        "The 24-hour minimum does not apply to eligible day-care procedures listed in the policy schedule. Such procedures may be covered even when hospital admission is shorter than 24 hours, subject to medical necessity, the policy schedule and exclusions."
+      ],
+      "source_document_ids": [
+        "01_policy_overview.md"
+      ],
+      "expected_behavior": "Cover all eligibility conditions and mention the day-care exception."
+    },
+    {
+      "id": "Q07",
+      "category": "multi_condition",
+      "user_input": "What are the room rent and ICU limits for the sample ₹5,00,000 plan?",
+      "reference": "The standard room rent limit is ₹5,000 per day (1% of the base sum insured), and the ICU limit is ₹10,000 per day (2% of the base sum insured). These are sub-limits within the overall sum insured.",
+      "reference_contexts": [
+        "The standard sample plan used in this evaluation dataset has a sum insured of ₹5,00,000 per policy year. The sum insured is the maximum overall amount available for eligible claims in a policy year, subject to applicable sub-limits and policy conditions.",
+        "Eligible standard room rent is limited to 1% of the base sum insured per day. For the sample ₹5,00,000 plan, the room rent limit is ₹5,000 per day.",
+        "Eligible ICU room charges are limited to 2% of the base sum insured per day. For the sample ₹5,00,000 plan, the ICU limit is ₹10,000 per day."
+      ],
+      "source_document_ids": [
+        "02_benefits_and_limits.md"
+      ],
+      "expected_behavior": "Return both correct calculated limits and explain that they are sub-limits."
+    },
+    {
+      "id": "Q08",
+      "category": "conceptual",
+      "user_input": "What is the difference between a cashless claim and a reimbursement claim under SecureCare Plus?",
+      "reference": "For a cashless claim, eligible expenses are settled directly with a network hospital after pre-authorization and approval, subject to final bill review and policy limits. For reimbursement, the policyholder pays for treatment and submits the required claim documents to seek payment for admissible expenses, subject to policy terms.",
+      "reference_contexts": [
+        "Cashless treatment is available only at a hospital in the insurer's network, and is subject to pre-authorization and approval by the insurer or its appointed Third-Party Administrator (TPA).",
+        "If treatment is taken at a non-network hospital, or cashless treatment is not used, the policyholder may submit a reimbursement claim, subject to policy terms.",
+        "The claim submission should include a completed claim form; discharge summary; original hospital bills and payment receipts; prescriptions and investigation reports; and any additional documents reasonably requested for claim assessment."
+      ],
+      "source_document_ids": [
+        "04_claims_procedure.md"
+      ],
+      "expected_behavior": "Explain both processes and distinguish direct hospital settlement from later claim submission."
+    },
+    {
+      "id": "Q09",
+      "category": "conceptual",
+      "user_input": "How do the initial waiting period and the pre-existing disease waiting period differ?",
+      "reference": "The initial waiting period is 30 days from the first policy commencement date for illnesses, but it does not apply to claims arising solely from an accident, subject to policy terms. The pre-existing disease waiting period is 36 months of continuous coverage, subject to applicable portability and continuity credits.",
+      "reference_contexts": [
+        "A 30-day initial waiting period applies from the first policy commencement date for illnesses. This initial waiting period does not apply to claims arising solely from an accident, subject to the policy terms.",
+        "A 36-month continuous coverage waiting period applies to pre-existing diseases, counted from the first policy commencement date, subject to applicable portability and continuity credits recorded by the insurer."
+      ],
+      "source_document_ids": [
+        "03_waiting_periods_and_exclusions.md"
+      ],
+      "expected_behavior": "Compare the 30-day initial period with the 36-month pre-existing disease period and include the accident exception."
+    },
+    {
+      "id": "Q10",
+      "category": "multi_document",
+      "user_input": "For a ₹5,00,000 policy, calculate the standard room rent and ICU daily limits, and explain how they relate to the overall cover.",
+      "reference": "The overall sum insured is ₹5,00,000 per policy year. The standard room rent limit is ₹5,000 per day (1% of the base sum insured), and the ICU limit is ₹10,000 per day (2%). Both are sub-limits within, not additions to, the overall sum insured.",
+      "reference_contexts": [
+        "The standard sample plan used in this evaluation dataset has a sum insured of ₹5,00,000 per policy year. The sum insured is the maximum overall amount available for eligible claims in a policy year, subject to applicable sub-limits and policy conditions.",
+        "Eligible standard room rent is limited to 1% of the base sum insured per day. For the sample ₹5,00,000 plan, the room rent limit is ₹5,000 per day.",
+        "Eligible ICU room charges are limited to 2% of the base sum insured per day. For the sample ₹5,00,000 plan, the ICU limit is ₹10,000 per day."
+      ],
+      "source_document_ids": [
+        "01_policy_overview.md",
+        "02_benefits_and_limits.md"
+      ],
+      "expected_behavior": "Combine the policy overview and benefit schedule; calculate both limits and explain the sub-limit relationship."
+    },
+    {
+      "id": "Q11",
+      "category": "multi_document",
+      "user_input": "After a covered hospitalization at a non-network hospital, what pre- and post-hospitalization expense windows apply, and what documents should I submit for reimbursement?",
+      "reference": "Eligible medical expenses related to the covered hospitalization are covered for 30 days before admission and 60 days after discharge, subject to policy terms and documentation. Because treatment was at a non-network hospital, the policyholder may submit a reimbursement claim. The submission should include the completed claim form, discharge summary, original hospital bills and payment receipts, prescriptions, investigation reports and any additional documents reasonably requested.",
+      "reference_contexts": [
+        "Eligible medical expenses related to a covered hospitalization are covered for 30 days before the date of admission and 60 days after the date of discharge.",
+        "If treatment is taken at a non-network hospital, or cashless treatment is not used, the policyholder may submit a reimbursement claim, subject to policy terms.",
+        "The claim submission should include a completed claim form; discharge summary; original hospital bills and payment receipts; prescriptions and investigation reports; and any additional documents reasonably requested for claim assessment."
+      ],
+      "source_document_ids": [
+        "02_benefits_and_limits.md",
+        "04_claims_procedure.md"
+      ],
+      "expected_behavior": "Combine benefit-window information from the benefits document with reimbursement eligibility and document requirements from the claims document."
+    },
+    {
+      "id": "Q12",
+      "category": "ambiguous",
+      "user_input": "Will my surgery be covered?",
+      "reference": "I need more information to assess this. Please share the surgery or procedure name, the diagnosis and whether it is planned as inpatient treatment or a listed day-care procedure. Coverage also depends on medical necessity, the policy schedule, applicable waiting periods, exclusions and available sum insured. The supplied documents do not identify your specific surgery.",
+      "reference_contexts": [
+        "Coverage is never determined by the name of a treatment alone. The diagnosis, medical necessity, provider, policy schedule, waiting periods, exclusions and available sum insured may all affect claim eligibility.",
+        "Eligible inpatient hospitalization expenses are covered when the admission is medically necessary; the insured person is admitted for at least 24 consecutive hours; and the treatment is not excluded and applicable waiting periods have been completed. The 24-hour minimum does not apply to eligible day-care procedures listed in the policy schedule.",
+        "The 24-hour minimum does not apply to eligible day-care procedures listed in the policy schedule. Such procedures may be covered even when hospital admission is shorter than 24 hours, subject to medical necessity, the policy schedule and exclusions."
+      ],
+      "source_document_ids": [
+        "01_policy_overview.md",
+        "03_waiting_periods_and_exclusions.md"
+      ],
+      "expected_behavior": "Ask for clarifying details; do not give a yes/no coverage decision without them."
+    },
+    {
+      "id": "Q13",
+      "category": "ambiguous",
+      "user_input": "Can I claim this bill?",
+      "reference": "Please clarify what the bill is for, the treatment or service date, whether it relates to a hospitalization, and whether you have already paid it. Eligibility depends on the type of expense, its relationship to a covered hospitalization, medical necessity, policy limits, waiting periods and exclusions. The supplied documents do not contain enough information to determine this bill's admissibility.",
+      "reference_contexts": [
+        "Coverage is never determined by the name of a treatment alone. The diagnosis, medical necessity, provider, policy schedule, waiting periods, exclusions and available sum insured may all affect claim eligibility.",
+        "Eligible medical expenses related to a covered hospitalization are covered for 30 days before the date of admission and 60 days after the date of discharge.",
+        "The claim submission should include a completed claim form; discharge summary; original hospital bills and payment receipts; prescriptions and investigation reports; and any additional documents reasonably requested for claim assessment."
+      ],
+      "source_document_ids": [
+        "01_policy_overview.md",
+        "02_benefits_and_limits.md",
+        "04_claims_procedure.md"
+      ],
+      "expected_behavior": "Ask for the missing bill and treatment details; do not assume the bill is admissible."
+    },
+    {
+      "id": "Q14",
+      "category": "unanswerable",
+      "user_input": "Does SecureCare Plus cover planned medical treatment outside India?",
+      "reference": "The supplied SecureCare Plus training documents do not specify whether planned medical treatment outside India is covered. I cannot confirm coverage from the available information. Please refer to the full policy wording or contact the insurer for confirmation.",
+      "reference_contexts": [],
+      "source_document_ids": [],
+      "expected_behavior": "Explicitly state that the knowledge base does not specify this; do not infer coverage or exclusion."
+    },
+    {
+      "id": "Q15",
+      "category": "unanswerable",
+      "user_input": "Does SecureCare Plus pay for home nursing services after hospital discharge?",
+      "reference": "The supplied SecureCare Plus training documents do not specify whether home nursing services after discharge are covered. I cannot confirm coverage from the available information. Please refer to the full policy wording or contact the insurer for confirmation.",
+      "reference_contexts": [],
+      "source_document_ids": [],
+      "expected_behavior": "State that the information is unavailable; do not invent a benefit or exclusion."
+    }
+  ]
+}
