@@ -25,13 +25,15 @@ def create_retriever(
     )
 
 
+
 def retrieve_documents(
     vector_store,
     query: str,
     top_k: int = 3,
+    metadata_filter: dict | None = None,
 ):
     """
-    Retrieve the top-K relevant document chunks.
+    Retrieve top-K relevant chunks with optional metadata filtering.
     """
     if not isinstance(query, str) or not query.strip():
         raise ValueError("Query must be a non-empty string")
@@ -39,8 +41,13 @@ def retrieve_documents(
     if not isinstance(top_k, int) or isinstance(top_k, bool) or top_k <= 0:
         raise ValueError("top_k must be a positive integer")
 
+    if metadata_filter is not None and not isinstance(metadata_filter, dict):
+        raise ValueError("metadata_filter must be a dictionary or None")
+
     return search_similar_documents(
         vector_store=vector_store,
         query=query.strip(),
         top_k=top_k,
+        metadata_filter=metadata_filter,
     )
+

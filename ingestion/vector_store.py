@@ -96,23 +96,29 @@ def load_vector_store(
     )
 
 
+
 def search_similar_documents(
-    vector_store: FAISS,
+    vector_store,
     query: str,
     top_k: int = 3,
-) -> list[Document]:
-    """Retrieve the top-K most relevant document chunks."""
-
-    if not isinstance(vector_store, FAISS):
-        raise TypeError("vector_store must be a FAISS instance")
-
+    metadata_filter: dict | None = None,
+):
+    """
+    Search FAISS for relevant documents,
+    optionally restricting results using metadata.
+    """
     if not isinstance(query, str) or not query.strip():
-        raise ValueError("query must be a non-empty string")
+        raise ValueError("Query must be a non-empty string")
 
-    if top_k <= 0:
-        raise ValueError("top_k must be greater than zero")
+    if not isinstance(top_k, int) or isinstance(top_k, bool) or top_k <= 0:
+        raise ValueError("top_k must be a positive integer")
+
+    if metadata_filter is not None and not isinstance(metadata_filter, dict):
+        raise ValueError("metadata_filter must be a dictionary or None")
 
     return vector_store.similarity_search(
-        query=query,
+        query=query.strip(),
         k=top_k,
+        filter=metadata_filter,
     )
+

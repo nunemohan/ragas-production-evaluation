@@ -121,3 +121,64 @@ def test_create_retriever_rejects_missing_directory(tmp_path):
 
     with pytest.raises(FileNotFoundError):
         create_retriever(str(missing_dir))
+
+
+def test_retrieve_documents_with_metadata_filter(vector_store):
+    results = retrieve_documents(
+        vector_store,
+        "hospitalization coverage",
+        top_k=3,
+        metadata_filter={"document_id": "benefits"},
+    )
+
+    assert len(results) > 0
+    assert all(
+        doc.metadata["document_id"] == "benefits"
+        for doc in results
+    )
+
+
+def test_retrieve_documents_returns_only_matching_metadata(vector_store):
+    results = retrieve_documents(
+        vector_store,
+        "hospitalization coverage",
+        top_k=3,
+        metadata_filter={"document_id": "claims"},
+    )
+
+    assert len(results) > 0
+    assert all(
+        doc.metadata["document_id"] == "claims"
+        for doc in results
+    )
+
+
+def test_retrieve_documents_with_no_matching_metadata(vector_store):
+    results = retrieve_documents(
+        vector_store,
+        "hospitalization coverage",
+        top_k=3,
+        metadata_filter={"document_id": "non_existing"},
+    )
+
+    assert results == []
+
+
+def test_retrieve_documents_rejects_invalid_metadata_filter(vector_store):
+    with pytest.raises(ValueError):
+        retrieve_documents(
+            vector_store,
+            "hospitalization coverage",
+            metadata_filter="benefits",
+        )
+
+
+def test_retrieve_documents_without_metadata_filter(vector_store):
+    results = retrieve_documents(
+        vector_store,
+        "hospitalization coverage",
+        top_k=3,
+    )
+
+    assert len(results) == 3
+
