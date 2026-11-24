@@ -5,6 +5,7 @@ from unittest.mock import patch
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
 
 from generation.answer_generator import generate_answer
+from generation.hallucination_guard import ABSTENTION_MESSAGE
 
 
 def test_generate_answer_returns_llm_response():
@@ -48,15 +49,6 @@ def test_generate_answer_rejects_empty_question():
         )
 
 
-def test_generate_answer_rejects_empty_context():
-    with pytest.raises(ValueError, match="Context"):
-        generate_answer(
-            question="What is covered?",
-            context=" ",
-            llm=FakeListChatModel(responses=["Answer"]),
-        )
-
-
 def test_generate_answer_creates_default_llm():
     fake_llm = FakeListChatModel(
         responses=["The coverage period is 30 days."]
@@ -85,3 +77,31 @@ def test_generate_answer_rejects_empty_llm_response():
             context="Some policy context.",
             llm=fake_llm,
         )
+
+
+def test_generate_answer_abstains_when_context_is_empty():
+    with patch(
+        "generation.answer_generator.create_chat_model"
+    ) as mock_create:
+
+        answer = generate_answer(
+            question="Is home nursing covered?",
+            context="",
+        )
+
+    assert answer == ABSTENTION_MESSAGE
+    mock_create.assert_not_called()
+
+
+def test_generate_answer_abstains_when_context_is_unavailable():
+    with patch(
+        "generation.answer_generator.create_chat_model"
+    ) as mock_create:
+
+        answer = generate_answer(
+            question="Is home nursing covered?",
+            context="No relevant context was retrieved.",
+        )
+
+    assert answer == ABSTENTION_MESSAGE
+    mock_create.assert_not_called()
