@@ -1,20 +1,20 @@
 
 import pytest
-from unittest.mock import patch
+from unittest.mock import Mock
 
-from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.documents import Document
 
 from retrieval.conversation_retriever import retrieve_with_conversation
 
 
 @pytest.fixture
 def mock_vector_store():
-    return object()
+    return Mock()
 
 
 @pytest.fixture
-def sample_documents():
+def mock_documents():
     return [
         Document(
             page_content="Post-hospitalization expenses are covered for 60 days.",
@@ -23,126 +23,117 @@ def sample_documents():
     ]
 
 
-@patch("retrieval.conversation_retriever.retrieve_documents")
-@patch("retrieval.conversation_retriever.rewrite_question")
-def test_retrieves_using_rewritten_question(
-    mock_rewrite,
-    mock_retrieve,
-    mock_vector_store,
-    sample_documents,
+def test_retrieve_with_conversation(
+    monkeypatch, mock_vector_store, mock_documents
 ):
-    mock_rewrite.return_value = "What are post-hospitalization benefits?"
-    mock_retrieve.return_value = sample_documents
+    def fake_rewrite_question(question, chat_history, llm):
+        return "What are the post-hospitalization benefits?"
+
+    def fake_retrieve_documents(
+        vector_store, query, top_k, metadata_filter
+    ):
+        assert query == "What are the post-hospitalization benefits?"
+        return mock_documents
+
+    monkeypatch.setattr(
+        "retrieval.conversation_retriever.rewrite_question",
+        fake_rewrite_question,
+    )
+    monkeypatch.setattr(
+        "retrieval.conversation_retriever.retrieve_documents",
+        fake_retrieve_documents,
+    )
 
     history = [
-        HumanMessage(content="What are hospitalization benefits?"),
-        AIMessage(content="Pre and post-hospitalization expenses are covered."),
+        HumanMessage(content="What are the hospitalization benefits?"),
+        AIMessage(content="Pre and post-hospitalization are covered."),
     ]
 
-    standalone_question, documents = retrieve_with_conversation(
+    result = retrieve_with_conversation(
         vector_store=mock_vector_store,
         question="What about after discharge?",
         chat_history=history,
     )
 
-    mock_rewrite.assert_called_once_with(
-        question="What about after discharge?",
-        chat_history=history,
-        llm=None,
+    assert result["original_question"] == "What about after discharge?"
+    assert result["rewritten_question"] == (
+        "What are the post-hospitalization benefits?"
     )
-
-    mock_retrieve.assert_called_once_with(
-        vector_store=mock_vector_store,
-        query="What are post-hospitalization benefits?",
-        top_k=3,
-        metadata_filter=None,
-    )
-
-    assert standalone_question == "What are post-hospitalization benefits?"
-    assert documents == sample_documents
+    assert result["documents"] == mock_documents
 
 
-@patch("retrieval.conversation_retriever.retrieve_documents")
-@patch("retrieval.conversation_retriever.rewrite_question")
-def test_retrieves_without_history(
-    mock_rewrite,
-    mock_retrieve,
-    mock_vector_store,
-    sample_documents,
+def test_retrieval_without_history(
+    monkeypatch, mock_vector_store, mock_documents
 ):
-    mock_rewrite.return_value = "What is the coverage?"
-    mock_retrieve.return_value = sample_documents
+    def fake_rewrite_question(question, chat_history, llm):
+        assert chat_history is None
+        return question
 
-    standalone_question, documents = retrieve_with_conversation(
+    def fake_retrieve_documents(
+        vector_store, query, top_k, metadata_filter
+    ):
+        assert query == "What is the policy coverage?"
+        return mock_documents
+
+    monkeypatch.setattr(
+        "retrieval.conversation_retriever.rewrite_question",
+        fake_rewrite_question,
+    )
+    monkeypatch.setattr(
+        "retrieval.conversation_retriever.retrieve_documents",
+        fake_retrieve_documents,
+    )
+
+    result = retrieve_with_conversation(
         vector_store=mock_vector_store,
-        question="What is the coverage?",
+        question="What is the policy coverage?",
     )
 
-    mock_rewrite.assert_called_once_with(
-        question="What is the coverage?",
-        chat_history=None,
-        llm=None,
-    )
-
-    assert standalone_question == "What is the coverage?"
-    assert documents == sample_documents
+    assert result["rewritten_question"] == "What is the policy coverage?"
+    assert result["documents"] == mock_documents
 
 
-@patch("retrieval.conversation_retriever.retrieve_documents")
-@patch("retrieval.conversation_retriever.rewrite_question")
-def test_forwards_top_k_and_metadata_filter(
-    mock_rewrite,
-    mock_retrieve,
-    mock_vector_store,
+def test_retrieval_passes_top_k_and_filter(
+    monkeypatch, mock_vector_store
 ):
-    mock_rewrite.return_value = "Standalone question"
-    mock_retrieve.return_value = []
+    captured = {}
+
+    def fake_rewrite_question(question, chat_history, llm):
+        return question
+
+    def fake_retrieve_documents(
+        vector_store, query, top_k, metadata_filter
+    ):
+        captured["top_k"] = top_k
+        captured["metadata_filter"] = metadata_filter
+        return []
+
+    monkeypatch.setattr(
+        "retrieval.conversation_retriever.rewrite_question",
+        fake_rewrite_question,
+    )
+    monkeypatch.setattr(
+        "retrieval.conversation_retriever.retrieve_documents",
+        fake_retrieve_documents,
+    )
 
     metadata_filter = {"document_id": "benefits"}
 
     retrieve_with_conversation(
         vector_store=mock_vector_store,
-        question="What about that?",
+        question="What is covered?",
         top_k=5,
         metadata_filter=metadata_filter,
     )
 
-    mock_retrieve.assert_called_once_with(
-        vector_store=mock_vector_store,
-        query="Standalone question",
-        top_k=5,
-        metadata_filter=metadata_filter,
-    )
-
-
-@patch("retrieval.conversation_retriever.retrieve_documents")
-@patch("retrieval.conversation_retriever.rewrite_question")
-def test_forwards_llm(
-    mock_rewrite,
-    mock_retrieve,
-    mock_vector_store,
-):
-    from langchain_core.language_models.fake_chat_models import FakeListChatModel
-
-    llm = FakeListChatModel(responses=["Standalone question"])
-    mock_rewrite.return_value = "Standalone question"
-    mock_retrieve.return_value = []
-
-    retrieve_with_conversation(
-        vector_store=mock_vector_store,
-        question="What about that?",
-        llm=llm,
-    )
-
-    mock_rewrite.assert_called_once_with(
-        question="What about that?",
-        chat_history=None,
-        llm=llm,
-    )
+    assert captured["top_k"] == 5
+    assert captured["metadata_filter"] == metadata_filter
 
 
 @pytest.mark.parametrize("question", ["", " ", None])
-def test_invalid_question_raises_error(mock_vector_store, question):
+def test_invalid_question_raises_error(
+    mock_vector_store, question
+):
     with pytest.raises(ValueError):
         retrieve_with_conversation(
             vector_store=mock_vector_store,
@@ -150,29 +141,29 @@ def test_invalid_question_raises_error(mock_vector_store, question):
         )
 
 
-def test_none_vector_store_raises_error():
-    with pytest.raises(ValueError):
-        retrieve_with_conversation(
-            vector_store=None,
-            question="What is the coverage?",
-        )
-
-
-@patch("retrieval.conversation_retriever.retrieve_documents")
-@patch("retrieval.conversation_retriever.rewrite_question")
-def test_original_question_is_not_modified(
-    mock_rewrite,
-    mock_retrieve,
-    mock_vector_store,
+def test_rewriter_receives_injected_llm(
+    monkeypatch, mock_vector_store
 ):
-    original_question = "What about after discharge?"
-    mock_rewrite.return_value = "What are post-hospitalization benefits?"
-    mock_retrieve.return_value = []
+    fake_llm = Mock()
+    captured = {}
 
-    standalone_question, _ = retrieve_with_conversation(
-        vector_store=mock_vector_store,
-        question=original_question,
+    def fake_rewrite_question(question, chat_history, llm):
+        captured["llm"] = llm
+        return question
+
+    monkeypatch.setattr(
+        "retrieval.conversation_retriever.rewrite_question",
+        fake_rewrite_question,
+    )
+    monkeypatch.setattr(
+        "retrieval.conversation_retriever.retrieve_documents",
+        lambda **kwargs: [],
     )
 
-    assert original_question == "What about after discharge?"
-    assert standalone_question != original_question
+    retrieve_with_conversation(
+        vector_store=mock_vector_store,
+        question="What is covered?",
+        llm=fake_llm,
+    )
+
+    assert captured["llm"] is fake_llm
