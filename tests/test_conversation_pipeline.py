@@ -110,7 +110,13 @@ def test_conversation_pipeline_returns_expected_result(
         "Post-hospitalization expenses are covered for 60 days."
     )
     assert result["documents"] == mock_documents
-    assert result["citations"] == []
+    assert result["citations"] == [
+    {
+        "document_id": "benefits",
+        "source": "02_benefits_and_limits.md",
+        "chunk_index": 0,
+    }
+    ]
 
 
 def test_conversation_history_is_saved(

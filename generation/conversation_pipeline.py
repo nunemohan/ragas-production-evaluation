@@ -58,7 +58,10 @@ class ConversationPipeline:
         self.llm = llm
         self.top_k = top_k
         self.metadata_filter = metadata_filter
-        self.citation_builder = citation_builder
+        self.citation_builder = (
+            citation_builder if citation_builder is not None
+            else build_citations
+        )
 
     def ask(
         self,
@@ -116,11 +119,7 @@ class ConversationPipeline:
         )
 
         # Step 5: Build source citations.
-        citations = (
-            self.citation_builder(documents)
-            if self.citation_builder is not None
-            else []
-        )
+        citations = self.citation_builder(documents)
 
         # Step 6: Save the conversation after successful processing.
         self.conversation_manager.add_user_message(
